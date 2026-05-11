@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meet.My.DOC Admin Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+<style>
+
+body{
+background:#f4f7fb;
+font-family:'Segoe UI',sans-serif;
+color:#1B2A4E;
+}
+
+.admin-header{
+background:linear-gradient(135deg,#0d6efd,#4f8cff);
+border-radius:28px;
+padding:35px;
+color:white;
+margin-bottom:30px;
+box-shadow:0 20px 40px rgba(13,110,253,0.18);
+}
+
+.stats-card{
+background:white;
+border-radius:24px;
+padding:24px;
+box-shadow:0 12px 30px rgba(0,0,0,0.06);
+transition:0.3s ease;
+height:100%;
+}
+
+.stats-card:hover{
+transform:translateY(-5px);
+}
+
+.stats-icon{
+width:60px;
+height:60px;
+border-radius:18px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+margin-bottom:18px;
+color:white;
+}
+
+.icon-blue{background:#0d6efd;}
+.icon-green{background:#198754;}
+.icon-yellow{background:#ffc107;color:black;}
+.icon-red{background:#dc3545;}
+
+.table-card{
+background:white;
+border-radius:24px;
+padding:24px;
+box-shadow:0 12px 30px rgba(0,0,0,0.06);
+}
+
+.status-badge{
+padding:8px 14px;
+border-radius:50px;
+font-size:12px;
+font-weight:600;
+}
+
+.badge-approved{
+background:#d1ffe3;
+color:#198754;
+}
+
+.badge-pending{
+background:#fff3cd;
+color:#856404;
+}
+
+.badge-rejected{
+background:#ffd6d6;
+color:#dc3545;
+}
+
+.badge-rescheduled{
+background:#dbe9ff;
+color:#0d6efd;
+}
+
+.action-btn{
+border:none;
+width:42px;
+height:42px;
+border-radius:12px;
+color:white;
+transition:0.3s ease;
+}
+
+.action-btn:hover{
+transform:translateY(-2px);
+}
+
+.action-btn i{
+pointer-events:none;
+}
+
+.btn-approve{background:#198754;}
+.btn-reject{background:#dc3545;}
+.btn-reschedule{background:#0d6efd;}
+
+.modern-modal{
+border:none;
+border-radius:28px;
+overflow:hidden;
+}
+
+.approve-header{
+background:linear-gradient(135deg,#198754,#36c275);
+color:white;
+padding:24px 28px;
+}
+
+.reject-header{
+background:linear-gradient(135deg,#dc3545,#ff6b7d);
+color:white;
+padding:24px 28px;
+}
+
+.modern-modal-header{
+background:linear-gradient(135deg,#0d6efd,#4f8cff);
+color:white;
+padding:24px 28px;
+}
+
+.appointment-preview{
+background:#f7faff;
+border-radius:20px;
+padding:18px;
+}
+
+.preview-item{
+display:flex;
+justify-content:space-between;
+padding:10px 0;
+border-bottom:1px solid #e7eeff;
+}
+
+.preview-item:last-child{
+border-bottom:none;
+}
+
+.modern-input{
+border-radius:16px;
+border:1px solid #dbe4ff;
+min-height:52px;
+}
+
+textarea.modern-input{
+min-height:120px;
+resize:none;
+}
+
+.time-slots-grid{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-top:15px;
+}
+
+.time-slot-btn{
+border:none;
+background:#edf4ff;
+padding:12px 16px;
+border-radius:14px;
+font-weight:600;
+color:#0d6efd;
+transition:0.3s ease;
+}
+
+.time-slot-btn:hover{
+background:#0d6efd;
+color:white;
+}
+
+.time-slot-btn.active{
+background:#0d6efd;
+color:white;
+box-shadow:0 10px 20px rgba(13,110,253,0.25);
+}
+
+.unavailable-box{
+background:#fff1f1;
+color:#dc3545;
+padding:18px;
+border-radius:18px;
+margin-top:15px;
+font-weight:600;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container py-4">
+
+<div class="admin-header d-flex justify-content-between align-items-center flex-wrap">
+
+<div>
+
+<h2 class="mb-2">
+<i class="fa-solid fa-user-doctor me-2"></i>
+Meet.My.DOC Admin Dashboard
+</h2>
+
+<div class="live-time" id="liveTime"></div>
+
+</div>
+
+<button
+class="btn btn-light rounded-pill px-4 py-2 mt-3 mt-md-0"
+onclick="refreshAppointments(event)">
+
+<i class="fa-solid fa-rotate me-2"></i>
+Refresh
+
+</button>
+
+</div>
+
+<div class="row g-4 mb-4">
+
+<div class="col-lg-3 col-md-6">
+<div class="stats-card">
+<div class="stats-icon icon-blue">
+<i class="fa-solid fa-calendar-check"></i>
+</div>
+<p>Total Appointments</p>
+<h3 id="totalAppointments">0</h3>
+</div>
+</div>
+
+<div class="col-lg-3 col-md-6">
+<div class="stats-card">
+<div class="stats-icon icon-green">
+<i class="fa-solid fa-circle-check"></i>
+</div>
+<p>Approved</p>
+<h3 id="approvedCount">0</h3>
+</div>
+</div>
+
+<div class="col-lg-3 col-md-6">
+<div class="stats-card">
+<div class="stats-icon icon-yellow">
+<i class="fa-solid fa-clock"></i>
+</div>
+<p>Pending</p>
+<h3 id="pendingCount">0</h3>
+</div>
+</div>
+
+<div class="col-lg-3 col-md-6">
+<div class="stats-card">
+<div class="stats-icon icon-red">
+<i class="fa-solid fa-circle-xmark"></i>
+</div>
+<p>Rejected</p>
+<h3 id="rejectedCount">0</h3>
+</div>
+</div>
+
+</div>
+
+<div class="table-card">
+
+<div class="table-responsive">
+
+<table class="table align-middle">
+
+<thead>
+
+<tr>
+<th>ID</th>
+<th>Patient</th>
+<th>Doctor</th>
+<th>Date</th>
+<th>Time</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+
+</thead>
+
+<tbody id="appointmentsTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="modal fade" id="approveModal" tabindex="-1">
+
+<div class="modal-dialog modal-dialog-centered">
+
+<div class="modal-content modern-modal">
+
+<div class="modal-header approve-header">
+
+<div>
+<h4 class="modal-title mb-1">
+<i class="fa-solid fa-circle-check me-2"></i>
+Approve Appointment
+</h4>
+
+<p class="mb-0">
+Confirm and send approval mail
+</p>
+</div>
+
+<button
+type="button"
+class="btn-close btn-close-white"
+data-bs-dismiss="modal"></button>
+
+</div>
+
+<div class="modal-body p-4">
+
+<div class="appointment-preview">
+
+<div class="preview-item">
+<span>Patient</span>
+<strong id="approvePatient"></strong>
+</div>
+
+<div class="preview-item">
+<span>Doctor</span>
+<strong id="approveDoctor"></strong>
+</div>
+
+<div class="preview-item">
+<span>Date</span>
+<strong id="approveDate"></strong>
+</div>
+
+<div class="preview-item">
+<span>Time</span>
+<strong id="approveTime"></strong>
+</div>
+
+</div>
+
+<div class="mt-4">
+<label class="form-label">Meeting Link</label>
+
+<input
+type="text"
+id="meetingLink"
+class="form-control modern-input"
+readonly>
+
+</div>
+
+<div class="mt-4">
+
+<label class="form-label">
+Approval Message
+</label>
+
+<textarea
+id="approvalMessage"
+class="form-control modern-input"></textarea>
+
+</div>
+
+</div>
+
+<div class="modal-footer border-0 px-4 pb-4">
+
+<button
+class="btn btn-light rounded-pill px-4"
+data-bs-dismiss="modal">
+Cancel
+</button>
+
+<button
+class="btn btn-success rounded-pill px-4"
+onclick="sendApprovalMail()">
+
+<i class="fa-solid fa-paper-plane me-2"></i>
+Send Approval Mail
+
+</button>
+
+</div>
+
+</div>
+</div>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1">
+
+<div class="modal-dialog modal-dialog-centered">
+
+<div class="modal-content modern-modal">
+
+<div class="modal-header reject-header">
+
+<div>
+
+<h4 class="modal-title mb-1">
+<i class="fa-solid fa-circle-xmark me-2"></i>
+Reject Appointment
+</h4>
+
+<p class="mb-0">
+Provide rejection reason
+</p>
+
+</div>
+
+<button
+type="button"
+class="btn-close btn-close-white"
+data-bs-dismiss="modal"></button>
+
+</div>
+
+<div class="modal-body p-4">
+
+<div class="appointment-preview">
+
+<div class="preview-item">
+<span>Doctor</span>
+<strong id="rejectDoctor"></strong>
+</div>
+
+<div class="preview-item">
+<span>Date</span>
+<strong id="rejectDate"></strong>
+</div>
+
+</div>
+
+<div class="mt-4">
+
+<label class="form-label">
+Reason
+</label>
+
+<textarea
+id="rejectReason"
+class="form-control modern-input"></textarea>
+
+</div>
+
+</div>
+
+<div class="modal-footer border-0 px-4 pb-4">
+
+<button
+class="btn btn-light rounded-pill px-4"
+data-bs-dismiss="modal">
+Cancel
+</button>
+
+<button
+class="btn btn-danger rounded-pill px-4"
+onclick="sendRejectMail()">
+
+<i class="fa-solid fa-paper-plane me-2"></i>
+Send Rejection Mail
+
+</button>
+
+</div>
+
+</div>
+</div>
+</div>
+
+<div class="modal fade" id="rescheduleModal" tabindex="-1">
+
+<div class="modal-dialog modal-dialog-centered">
+
+<div class="modal-content modern-modal">
+
+<div class="modal-header modern-modal-header">
+
+<div>
+
+<h4 class="modal-title mb-1">
+<i class="fa-solid fa-calendar-days me-2"></i>
+Reschedule Appointment
+</h4>
+
+<p class="mb-0">
+Update appointment schedule
+</p>
+
+</div>
+
+<button
+type="button"
+class="btn-close btn-close-white"
+data-bs-dismiss="modal"></button>
+
+</div>
+
+<div class="modal-body p-4">
+
+<div class="appointment-preview">
+
+<div class="preview-item">
+<span>Doctor</span>
+<strong id="previewDoctor"></strong>
+</div>
+
+<div class="preview-item">
+<span>Date</span>
+<strong id="previewDate"></strong>
+</div>
+
+<div class="preview-item">
+<span>Time</span>
+<strong id="previewTime"></strong>
+</div>
+
+</div>
+
+<div class="row g-3 mt-3">
+
+<div class="col-md-6">
+
+<label class="form-label">
+New Date
+</label>
+
+<input
+type="date"
+id="newDate"
+class="form-control modern-input"
+onchange="updateRescheduleSlots()">
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+Select Time Slot
+</label>
+
+<input type="hidden" id="newTime">
+
+<div id="rescheduleSlots">
+<p class="text-muted">Select new date</p>
+</div>
+
+</div>
+
+</div>
+
+<div class="mt-4">
+
+<label class="form-label">
+Message
+</label>
+
+<textarea
+id="rescheduleReason"
+class="form-control modern-input"></textarea>
+
+</div>
+
+</div>
+
+<div class="modal-footer border-0 px-4 pb-4">
+
+<button
+class="btn btn-light rounded-pill px-4"
+data-bs-dismiss="modal">
+Cancel
+</button>
+
+<button
+class="btn btn-primary rounded-pill px-4"
+onclick="sendRescheduleMail()">
+
+<i class="fa-solid fa-paper-plane me-2"></i>
+Send Reschedule Mail
+
+</button>
+
+</div>
+
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+const SHEET_JSON_URL =
+"https://opensheet.elk.sh/1yrOKnn9xCOeh-eE1GMCNxsJhgdzMwYOBZ3XcZpHwSos/Sheet1";
+
+const APPS_SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbzI3TVbvAzfgHZz9DPKtB1dN9hM9CmNAl1rCeAo8dHWcwaVA-zB3Wry5KHlM4ypgyj3/exec";
+
+let appointmentsData = [];
+let selectedAppointment = null;
+
+const doctorSchedules = {
+
+"Dr. Abhijit Ray":{
+days:["Wednesday","Friday"],
+slots:[
+"09:00 AM",
+"09:30 AM",
+"10:00 AM",
+"10:30 AM",
+"11:00 AM",
+"11:30 AM",
+"12:00 PM",
+"12:30 PM",
+"01:00 PM",
+"01:30 PM",
+"02:00 PM",
+"02:30 PM",
+"03:00 PM"
+]
+},
+
+"Dr. Abir Lal Nath":{
+days:["Tuesday","Thursday"],
+slots:[
+"10:00 AM",
+"10:30 AM",
+"11:00 AM",
+"11:30 AM",
+"12:00 PM",
+"12:30 PM",
+"01:00 PM",
+"01:30 PM",
+"02:00 PM",
+"02:30 PM",
+"03:00 PM",
+"03:30 PM",
+"04:00 PM",
+"04:30 PM",
+"05:00 PM"
+]
+},
+
+"Dr. Amaresh Shil":{
+days:["Monday","Wednesday","Friday"],
+slots:[
+"11:00 AM",
+"11:30 AM",
+"12:00 PM",
+"12:30 PM",
+"01:00 PM",
+"01:30 PM",
+"02:00 PM",
+"02:30 PM",
+"03:00 PM",
+"03:30 PM",
+"04:00 PM",
+"04:30 PM",
+"05:00 PM",
+"05:30 PM",
+"06:00 PM"
+]
+},
+
+"Dr. Arup Deb":{
+days:["Monday","Tuesday","Wednesday","Thursday","Friday"],
+slots:[
+"09:00 AM",
+"09:30 AM",
+"10:00 AM",
+"10:30 AM",
+"11:00 AM",
+"11:30 AM",
+"12:00 PM",
+"12:30 PM",
+"01:00 PM",
+"01:30 PM",
+"02:00 PM",
+"02:30 PM",
+"03:00 PM"
+]
+},
+
+"Dr. Mukut Roy":{
+days:["Monday","Wednesday"],
+slots:[
+"10:00 AM",
+"10:30 AM",
+"11:00 AM",
+"11:30 AM",
+"12:00 PM",
+"12:30 PM",
+"01:00 PM",
+"01:30 PM",
+"02:00 PM",
+"02:30 PM",
+"03:00 PM"
+]
+},
+
+"Dr. Nilanjan Majumdar":{
+days:["Tuesday","Wednesday","Thursday","Friday","Saturday"],
+slots:[
+"10:00 AM",
+"10:30 AM",
+"11:00 AM",
+"11:30 AM",
+"12:00 PM",
+"12:30 PM",
+"01:00 PM",
+"01:30 PM",
+"02:00 PM",
+"02:30 PM",
+"03:00 PM",
+"03:30 PM",
+"04:00 PM"
+]
+},
+
+"Dr. Nitish Das":{
+days:[
+"Monday",
+"Tuesday",
+"Wednesday",
+"Thursday",
+"Friday",
+"Saturday",
+"Sunday"
+],
+slots:[
+"08:00 AM",
+"08:30 AM",
+"09:00 AM",
+"09:30 AM",
+"10:00 AM",
+"10:30 AM",
+"11:00 AM",
+"11:30 AM",
+"12:00 PM",
+"12:30 PM",
+"01:00 PM",
+"01:30 PM",
+"02:00 PM",
+"02:30 PM",
+"03:00 PM",
+"03:30 PM",
+"04:00 PM",
+"04:30 PM",
+"05:00 PM",
+"05:30 PM",
+"06:00 PM",
+"06:30 PM",
+"07:00 PM",
+"07:30 PM",
+"08:00 PM"
+]
+},
+
+"Dr. Vikas Kohli":{
+days:["Tuesday","Wednesday","Thursday","Friday","Saturday"],
+slots:[
+"10:00 AM",
+"10:30 AM",
+"11:00 AM",
+"11:30 AM",
+"12:00 PM",
+"12:30 PM",
+"01:00 PM",
+"01:30 PM",
+"02:00 PM"
+]
+}
+
+};
+
+function updateClock(){
+
+document.getElementById("liveTime").textContent =
+new Date().toLocaleString();
+
+}
+
+setInterval(updateClock,1000);
+updateClock();
+
+async function refreshAppointments(event){
+
+const btn = event.currentTarget;
+
+btn.innerHTML =
+'<i class="fa-solid fa-spinner fa-spin me-2"></i>Refreshing';
+
+await loadAppointments();
+
+setTimeout(()=>{
+
+btn.innerHTML =
+'<i class="fa-solid fa-rotate me-2"></i>Refresh';
+
+},1000);
+
+}
+
+async function loadAppointments(){
+
+const response =
+await fetch(SHEET_JSON_URL);
+
+appointmentsData =
+await response.json();
+
+appointmentsData.reverse();
+
+updateStats();
+
+renderAppointments();
+
+}
+
+function updateStats(){
+
+document.getElementById("totalAppointments").textContent =
+appointmentsData.length;
+
+document.getElementById("approvedCount").textContent =
+appointmentsData.filter(x=>x.Status==="Approved").length;
+
+document.getElementById("pendingCount").textContent =
+appointmentsData.filter(x=>!x.Status || x.Status==="Pending").length;
+
+document.getElementById("rejectedCount").textContent =
+appointmentsData.filter(x=>x.Status==="Rejected").length;
+
+}
+
+function renderAppointments(){
+
+const table =
+document.getElementById("appointmentsTable");
+
+table.innerHTML = "";
+
+appointmentsData.forEach(item=>{
+
+let badgeClass = "badge-pending";
+
+if(item.Status==="Approved"){
+badgeClass="badge-approved";
+}
+
+if(item.Status==="Rejected"){
+badgeClass="badge-rejected";
+}
+
+if(item.Status==="Rescheduled"){
+badgeClass="badge-rescheduled";
+}
+
+table.innerHTML += `
+
+<tr>
+
+<td>${item.AppointmentID}</td>
+
+<td>
+<strong>${item.PatientName}</strong>
+<div class="small text-muted">
+${item.Email}
+</div>
+</td>
+
+<td>${item.Doctor}</td>
+
+<td>${item.Date}</td>
+
+<td>${item.Time}</td>
+
+<td>
+
+<span class="status-badge ${badgeClass}">
+${item.Status || "Pending"}
+</span>
+
+</td>
+
+<td>
+
+<div class="d-flex gap-2">
+
+<button
+class="action-btn btn-approve"
+onclick='openApproveModal(${JSON.stringify(item)})'>
+
+<i class="fa-solid fa-check"></i>
+
+</button>
+
+<button
+class="action-btn btn-reject"
+onclick='openRejectModal(${JSON.stringify(item)})'>
+
+<i class="fa-solid fa-xmark"></i>
+
+</button>
+
+<button
+class="action-btn btn-reschedule"
+onclick='openRescheduleModal(${JSON.stringify(item)})'>
+
+<i class="fa-solid fa-calendar"></i>
+
+</button>
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+async function updateAppointmentStatus(
+appointmentID,
+status,
+newDate="",
+newTime=""
+){
+
+try{
+
+await fetch(APPS_SCRIPT_URL,{
+
+method:"POST",
+mode:"no-cors",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+appointmentID,
+status,
+newDate,
+newTime
+})
+
+});
+
+loadAppointments();
+
+}catch(error){
+
+console.error(error);
+
+}
+
+}
+
+function openApproveModal(item){
+
+selectedAppointment = item;
+
+const meetingLink =
+"https://meet.jit.si/" +
+item.AppointmentID;
+
+document.getElementById("approvePatient").textContent =
+item.PatientName;
+
+document.getElementById("approveDoctor").textContent =
+item.Doctor;
+
+document.getElementById("approveDate").textContent =
+item.Date;
+
+document.getElementById("approveTime").textContent =
+item.Time;
+
+document.getElementById("meetingLink").value =
+meetingLink;
+
+document.getElementById("approvalMessage").value =
+"Your appointment has been approved successfully.";
+
+new bootstrap.Modal(
+document.getElementById("approveModal")
+).show();
+
+}
+
+function sendApprovalMail(){
+
+const item = selectedAppointment;
+
+updateAppointmentStatus(
+item.AppointmentID,
+"Approved"
+);
+
+const subject =
+"Appointment Approved - Meet.My.DOC";
+
+const body =
+
+`Hi ${item.PatientName},
+
+Your medical appointment has been successfully booked through Meet.My.DOC.
+
+We have reserved your consultation slot with the following details:
+
+Appointment ID:
+${item.AppointmentID}
+
+Doctor:
+${item.Doctor}
+
+Department:
+${item.Department || "General Consultation"}
+
+Date:
+${item.Date}
+
+Time:
+${item.Time}
+
+What to do next?
+
+• Please ensure you have a stable internet connection on the scheduled consultation date.
+• Keep your device camera and microphone enabled for smooth communication.
+• Join the video consultation using the secure meeting link below.
+
+Join Video Call:
+${document.getElementById("meetingLink").value}
+
+Thank you for choosing Meet.My.DOC for your healthcare needs.
+
+Regards,
+Meet.My.DOC Team`;
+
+const gmailURL =
+
+`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(item.Email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+window.open(gmailURL,"_blank");
+
+bootstrap.Modal.getInstance(
+document.getElementById("approveModal")
+)?.hide();
+
+}
+
+function openRejectModal(item){
+
+selectedAppointment = item;
+
+document.getElementById("rejectDoctor").textContent =
+item.Doctor;
+
+document.getElementById("rejectDate").textContent =
+item.Date;
+
+document.getElementById("rejectReason").value = "";
+
+new bootstrap.Modal(
+document.getElementById("rejectModal")
+).show();
+
+}
+
+function sendRejectMail(){
+
+const item = selectedAppointment;
+
+updateAppointmentStatus(
+item.AppointmentID,
+"Rejected"
+);
+
+const subject =
+"Appointment Rejected - Meet.My.DOC";
+
+const body =
+
+`Hi ${item.PatientName},
+
+We regret to inform you that your appointment request could not be approved at this time.
+
+Appointment ID:
+${item.AppointmentID}
+
+Doctor:
+${item.Doctor}
+
+Requested Date:
+${item.Date}
+
+Reason for rejection:
+${document.getElementById("rejectReason").value}
+
+You may submit a new appointment request through Meet.My.DOC with an alternate schedule.
+
+We sincerely apologize for the inconvenience caused and appreciate your understanding.
+
+Regards,
+Meet.My.DOC Team`;
+
+const gmailURL =
+
+`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(item.Email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+window.open(gmailURL,"_blank");
+
+bootstrap.Modal.getInstance(
+document.getElementById("rejectModal")
+)?.hide();
+
+}
+
+function openRescheduleModal(item){
+
+selectedAppointment = item;
+
+document.getElementById("previewDoctor").textContent =
+item.Doctor;
+
+document.getElementById("previewDate").textContent =
+item.Date;
+
+document.getElementById("previewTime").textContent =
+item.Time;
+
+document.getElementById("newDate").value = "";
+document.getElementById("newTime").value = "";
+
+document.getElementById("rescheduleReason").value =
+"Your appointment schedule has been updated.";
+
+updateRescheduleSlots();
+
+new bootstrap.Modal(
+document.getElementById("rescheduleModal")
+).show();
+
+}
+
+function updateRescheduleSlots(){
+
+const doctor =
+selectedAppointment.Doctor;
+
+const date =
+document.getElementById("newDate").value;
+
+const slotsContainer =
+document.getElementById("rescheduleSlots");
+
+slotsContainer.innerHTML = "";
+
+if(!date){
+
+slotsContainer.innerHTML =
+'<p class="text-muted">Select new date</p>';
+
+return;
+
+}
+
+const selectedDate =
+new Date(date);
+
+const dayName =
+selectedDate.toLocaleDateString(
+'en-US',
+{ weekday:'long' }
+);
+
+const doctorData =
+doctorSchedules[doctor];
+
+if(!doctorData){
+return;
+}
+
+if(!doctorData.days.includes(dayName)){
+
+slotsContainer.innerHTML =
+
+`<div class="unavailable-box">
+
+Doctor unavailable on ${dayName}
+
+</div>`;
+
+return;
+
+}
+
+slotsContainer.innerHTML =
+'<div class="time-slots-grid"></div>';
+
+const grid =
+slotsContainer.querySelector('.time-slots-grid');
+
+doctorData.slots.forEach(slot=>{
+
+grid.innerHTML +=
+
+`<button
+type="button"
+class="time-slot-btn"
+onclick="selectRescheduleTime(this,'${slot}')">
+
+${slot}
+
+</button>`;
+
+});
+
+}
+
+function selectRescheduleTime(button,time){
+
+document
+.querySelectorAll(".time-slot-btn")
+.forEach(btn=>{
+btn.classList.remove("active");
+});
+
+button.classList.add("active");
+
+document.getElementById("newTime").value =
+time;
+
+}
+
+function sendRescheduleMail(){
+
+const item = selectedAppointment;
+
+const newDate =
+document.getElementById("newDate").value;
+
+const newTime =
+document.getElementById("newTime").value;
+
+if(!newDate || !newTime){
+
+alert(
+"Please select new date and time slot"
+);
+
+return;
+
+}
+
+updateAppointmentStatus(
+item.AppointmentID,
+"Rescheduled",
+newDate,
+newTime
+);
+
+const subject =
+"Appointment Rescheduled - Meet.My.DOC";
+
+const body =
+
+`Hi ${item.PatientName},
+
+Your medical appointment has been successfully rescheduled through Meet.My.DOC.
+
+Updated Appointment Details:
+
+Appointment ID:
+${item.AppointmentID}
+
+Doctor:
+${item.Doctor}
+
+New Date:
+${newDate}
+
+New Time:
+${newTime}
+
+Additional Message:
+${document.getElementById("rescheduleReason").value}
+
+Please ensure you are available at the updated consultation time.
+
+Thank you for choosing Meet.My.DOC for your healthcare needs.
+
+Regards,
+Meet.My.DOC Team`;
+
+const gmailURL =
+
+`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(item.Email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+window.open(gmailURL,"_blank");
+
+bootstrap.Modal.getInstance(
+document.getElementById("rescheduleModal")
+)?.hide();
+
+}
+
+loadAppointments();
+
+</script>
+
+</body>
+</html>
